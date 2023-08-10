@@ -20,12 +20,14 @@ from django.conf.urls.static import static
 from django.urls import path, include
 from rest_framework import routers
 from reports.views import ReportModelViewSet
+from todays.views import TodayViewSet
 
 from django.urls import re_path
 from rest_framework import permissions
 
 router = routers.DefaultRouter()
 router.register('report', ReportModelViewSet)
+router.register('today', TodayViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

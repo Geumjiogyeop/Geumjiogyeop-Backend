@@ -3,6 +3,7 @@ from django.conf import settings
 from rest_framework.serializers import ModelSerializer,HyperlinkedModelSerializer
 from rest_framework import serializers
 from .models import Today, Images
+from rest_framework.fields import CurrentUserDefault
 
 class TodayImageSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True)
@@ -44,3 +45,18 @@ class TodaySerializer(serializers.ModelSerializer):
         for image_data in image_set.getlist('image'):
             Images.objects.create(today=instance, image=image_data)
         return instance
+    
+class TodayRetrieveSerializer(serializers.ModelSerializer):
+    editable = serializers.SerializerMethodField()
+    class Meta:
+        model = Today
+        fields = ['title', 'writer', 'content', 'created_at', 'editable']
+        depth = 1
+
+    def get_editable(self, obj):
+        print("Current@@@@@@@@", self.context.user)
+        print("writer@@@@@@@", obj.writer)
+        if self.context.user == obj.writer:
+            return True
+        else:
+            return False

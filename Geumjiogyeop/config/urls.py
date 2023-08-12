@@ -18,9 +18,27 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
+from user.views import UserRegisterView, UserLoginView, UserLogoutView, UserDetailView
+from adoption.views import AdoptionList, AdoptionCreate, AdoptionDetail, AdoptionLikeView, AdoptionCancelLikeView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("user/signin", UserRegisterView.as_view()),
+    path("user/login", UserLoginView.as_view()),
+    path("user/logout", UserLogoutView.as_view()),
+    # path("user/view/", UserDetailView.as_view()),
+    path("adoption", AdoptionList.as_view()),
+    path("adoption/(?P<adoption_availability>.+)/$", AdoptionList.as_view()),
+    path("adoption/(?P<center>.+)/$", AdoptionList.as_view()),
+    path("adoption/(?P<breed>.+)/$", AdoptionList.as_view()),
+    path("adoption/(?P<gender>.+)/$", AdoptionList.as_view()),
+    path("adoption/(?P<age>.+)/$", AdoptionList.as_view()),
+    path("adoption/create", AdoptionCreate.as_view()),
+    path("adoption/<int:pk>", AdoptionDetail.as_view()),
+    # path("adoption/<int:pk>/update", AdoptionDetail.as_view(action='update')),
+    # path("adoption/<int:pk>/delete", AdoptionDetail.as_view(action='delete')),
+    path("adoption/<int:pk>/likes", AdoptionLikeView.as_view()),
+    path("adoption/<int:pk>/cancellikes", AdoptionCancelLikeView.as_view()),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

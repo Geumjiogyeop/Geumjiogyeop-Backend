@@ -13,4 +13,4 @@ class Report(models.Model):
     victim = models.ForeignKey(to=User, on_delete = models.CASCADE)
     date = models.DateTimeField("사고날짜")
     type = models.TextField(verbose_name = "유형")
-    etc = models.CharField(verbose_name = "기타이유")
+

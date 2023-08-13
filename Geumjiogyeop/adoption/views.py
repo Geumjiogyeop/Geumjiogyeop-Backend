@@ -78,6 +78,10 @@ class AdoptionLikeView(generics.GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
+        # user = request.user
+
+        # like, created = UserLikedAdoption.objects.get_or_create(user=user, adoption=instance)
+        # if created:
         instance.likes += 1
         instance.save()
         return Response(instance.likes)

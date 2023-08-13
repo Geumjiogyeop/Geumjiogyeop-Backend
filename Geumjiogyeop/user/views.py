@@ -11,6 +11,8 @@ from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.renderers import JSONRenderer
 import jwt, datetime
+# from jwt.exceptions import ExpiredSignatureError, ImmatureSignatureError
+from datetime import datetime, timedelta, timezone
 
 # 회원가입
 class UserRegisterView(APIView):
@@ -56,12 +58,18 @@ class UserLoginView(APIView):
         # is same?
         if not user.check_password(password) :
             raise AuthenticationFailed("Incorrect password!")
+        
+        current_time = datetime.now(timezone.utc)
+        expiration_time = current_time + timedelta(minutes=60)
 
         ## JWT 구현 부분
         payload = {
-            'id' : int(user.user_id),
-            'exp' : datetime.datetime.now() + datetime.timedelta(minutes=60),
-            'iat' : datetime.datetime.now()
+            # 'id' : int(user.user_id),
+            'user_id' : int(user.user_id), # KeyError 발생 때문에 'user_id'로 변경
+            # 'exp' : datetime.datetime.now() + datetime.timedelta(minutes=60),
+            'exp' : expiration_time,
+            # 'iat' : datetime.datetime.now()
+            'iat' : current_time
         }
 
         # AttributeError: 'str' object has no attribute 'decode' 때문에 decode 부분 삭제하니 정상적으로 동작
@@ -78,16 +86,16 @@ class UserLoginView(APIView):
 class UserLogoutView(APIView):
     # permission_classes = [IsAuthenticated]
     def post(self,req):
-        token = req.COOKIES.get('jwt')
+        # token = req.COOKIES.get('jwt')
 
-        if not token :
-            raise AuthenticationFailed('UnAuthenticated!')
+        # if not token :
+        #     raise AuthenticationFailed('UnAuthenticated!')
 
-        try :
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        # try :
+        #     payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
 
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('UnAuthenticated!')
+        # except jwt.ExpiredSignatureError:
+        #     raise AuthenticationFailed('UnAuthenticated!')
 
         res = Response()
         res.delete_cookie('jwt')
@@ -114,6 +122,7 @@ class UserDetailView(APIView):
             raise AuthenticationFailed('UnAuthenticated!')
 
         user = User.objects.get(user_id=payload['user_id'])
+        # user = User.objects.get(user_id=payload['user_id']).first()
         
         serializer = UserDetailSerializer(user)
 

@@ -21,3 +21,6 @@ class Adoption(models.Model):
 class UserLikedAdoption(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     adoption = models.ForeignKey(Adoption, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ['user', 'adoption']

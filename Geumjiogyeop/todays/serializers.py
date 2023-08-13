@@ -2,7 +2,7 @@ import os
 from django.conf import settings
 from rest_framework.serializers import ModelSerializer,HyperlinkedModelSerializer
 from rest_framework import serializers
-from .models import Today, Images
+from .models import Today, Images, TodayLiked
 from rest_framework.fields import CurrentUserDefault
 
 class TodayImageSerializer(serializers.ModelSerializer):
@@ -50,7 +50,7 @@ class TodayRetrieveSerializer(serializers.ModelSerializer):
     editable = serializers.SerializerMethodField()
     class Meta:
         model = Today
-        fields = ['title', 'writer', 'content', 'created_at', 'editable']
+        fields = ['title', 'writer', 'content', 'created_at', 'editable', 'likes']
         depth = 1
 
     def get_editable(self, obj):
@@ -60,3 +60,9 @@ class TodayRetrieveSerializer(serializers.ModelSerializer):
             return True
         else:
             return False
+        
+class TodayLikedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TodayLiked
+        fields = '__all__'
+

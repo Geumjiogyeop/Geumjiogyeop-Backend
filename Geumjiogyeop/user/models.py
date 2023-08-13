@@ -44,7 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 	# 헬퍼 클래스 사용
     objects = UserManager()
 
-	# 이메일로 로그인
+	# 핸드폰 번호로 로그인
     USERNAME_FIELD = 'phonenumber'
 
     def __str__(self):

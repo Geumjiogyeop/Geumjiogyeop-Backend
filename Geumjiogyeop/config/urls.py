@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from user.views import UserRegisterView, UserLoginView, UserLogoutView, UserDetailView
+from user.views import UserRegisterView, UserLoginView, UserLogoutView, UserDetailView, UserAdoptionListView, UserAdoptionDetailView
 from adoption.views import AdoptionList, AdoptionCreate, AdoptionDetail, AdoptionLikeView, AdoptionCancelLikeView
 
 urlpatterns = [
@@ -27,6 +27,8 @@ urlpatterns = [
     path("user/login/", UserLoginView.as_view()),
     path("user/logout/", UserLogoutView.as_view()),
     path("user/view/", UserDetailView.as_view()),
+    path("user/<int:pk>/register-adoption", UserAdoptionListView.as_view()),
+    path("user/<int:pk>/register-adoption/<int:adoption_pk>", UserAdoptionDetailView.as_view()),
     path("adoption/", AdoptionList.as_view()),
     # path("adoption/(?P<adoption_availability>.+)/$", AdoptionList.as_view()),
     # path("adoption/(?P<center>.+)/$", AdoptionList.as_view()),

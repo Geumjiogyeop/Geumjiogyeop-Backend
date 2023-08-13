@@ -3,7 +3,7 @@ from user.models import User
 
 class Adoption(models.Model):
     adoption_id = models.AutoField(primary_key=True)
-    # user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1, related_name='adoptions') # 역참조되도록 related_name 추가
     name = models.CharField(max_length=10)
     breed = models.CharField(max_length=10)
     gender = models.CharField(max_length=1) # 남(m), 여(f)

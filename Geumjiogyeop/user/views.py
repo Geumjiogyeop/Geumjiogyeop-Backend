@@ -5,7 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import User
-from .serializers import UserRegisterSerializer, UserLoginSerializer, UserDetailSerializer
+from adoption.models import Adoption
+from .serializers import UserRegisterSerializer, UserLoginSerializer, UserDetailSerializer, UserAdoptionDetailSerializer, UserAdoptionListSerializer, AdoptionSerializer
 from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.renderers import JSONRenderer
@@ -75,7 +76,7 @@ class UserLoginView(APIView):
     
 # 로그아웃
 class UserLogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def post(self,req):
         token = req.COOKIES.get('jwt')
 
@@ -132,7 +133,7 @@ class UserDetailView(APIView):
             raise AuthenticationFailed('UnAuthenticated!')
 
         user = User.objects.get(user_id=payload['user_id'])
-        serializer = UserDetailSerializer(user, data=req.data, partial=True)
+        serializer = UserAdoptionDetailSerializer(user, data=req.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
@@ -140,6 +141,29 @@ class UserDetailView(APIView):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserAdoptionListView(APIView):
+    def get(self, request, pk):
+        try:
+            user = User.objects.get(user_id=pk)
+            adoptions = Adoption.objects.filter(user_id=user)
+            serializer = UserAdoptionListSerializer(user)
+            return Response(serializer.data)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+class UserAdoptionDetailView(APIView):
+    def get(self, request, pk, adoption_pk):
+        try:
+            user = User.objects.get(user_id=pk)
+            adoption = Adoption.objects.get(adoption_id=adoption_pk, user_id=user)
+            # serializer = UserAdoptionDetailSerializer(user)
+            serializer = AdoptionSerializer(adoption)
+            return Response(serializer.data)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Adoption.DoesNotExist:
+            return Response({"error": "Adoption not found for the given user."}, status=status.HTTP_404_NOT_FOUND)
 
 # class UserRegisterView(APIView):
 #     serializer_class = UserRegisterSerializer

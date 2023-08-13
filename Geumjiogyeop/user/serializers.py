@@ -1,4 +1,5 @@
 from .models import User
+from adoption.models import Adoption
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -45,3 +46,22 @@ class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['user_id', 'phonenumber', 'name', 'birthday', 'gender', 'is_foreigner']
+
+class AdoptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Adoption
+        fields = '__all__'
+
+class UserAdoptionListSerializer(serializers.ModelSerializer):
+    adoptions = AdoptionSerializer(many=True)
+
+    class Meta:
+        model = User
+        fields = ['user_id', 'name', 'adoptions']
+
+class UserAdoptionDetailSerializer(serializers.ModelSerializer):
+    adoptions = AdoptionSerializer(many=True)
+
+    class Meta:
+        model = User
+        fields = ['adoptions']

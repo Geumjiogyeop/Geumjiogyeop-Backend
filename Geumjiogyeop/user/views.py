@@ -17,11 +17,12 @@ class UserRegisterView(APIView):
     serializer_class = UserRegisterSerializer
     def post(self, req):
         serializer = UserRegisterSerializer(data=req.data)
-        # print('serializer:', serializer.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        # serializer.is_valid(raise_exception=True)
+        if serializer.is_valid():
+            # print('serializer:', req.data)
+            serializer.save()
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
     
 # 로그인
 class UserLoginView(APIView):
@@ -74,7 +75,7 @@ class UserLoginView(APIView):
     
 # 로그아웃
 class UserLogoutView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def post(self,req):
         token = req.COOKIES.get('jwt')
 
@@ -95,7 +96,7 @@ class UserLogoutView(APIView):
         return res
     
 class UserDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
 

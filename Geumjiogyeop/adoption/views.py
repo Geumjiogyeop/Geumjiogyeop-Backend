@@ -5,28 +5,31 @@ from .models import Adoption, UserLikedAdoption
 from .serializers import AdoptionListSerializer, AdoptionCreateSerializer, AdoptionDetailSerializer
 
 class AdoptionList(generics.ListAPIView):
-    # queryset= Adoption.objects.all()
     serializer_class = AdoptionListSerializer
-    # filter_backends = [filters.SearchFilter]
-    # '^' : starts-with search, '=' : exact matches, '@' : full-text search, '$' : regax search
-    # search_fields = ['=adoption_availability', 'center', 'breed', '=gender', '=age']
+
     def get_queryset(self):
         queryset = Adoption.objects.all()
-        adoption_availability = self.request.query_params.get('adoption_availability', None)
-        center = self.request.query_params.get('center', None)
-        breed = self.request.query_params.get('breed', None)
-        gender = self.request.query_params.get('gender', None)
-        age = self.request.query_params.get('age', None)
-        if adoption_availability is not None:
-            queryset = queryset.filter(adoption_availability=adoption_availability)
-        if center is not None:
-            queryset = queryset.filter(center=center)
-        if breed is not None:
-            queryset = queryset.filter(breed=breed)
-        if gender is not None:
-            queryset = queryset.filter(gender=gender)
-        if age is not None:
-            queryset = queryset.filter(age=age)
+        params = self.request.query_params
+
+        adoption_availability = params.getlist('adoption_availability')
+        # center = params.getlist('center')
+        center = params.get('center')
+        breed = params.getlist('breed')
+        gender = params.getlist('gender')
+        age = params.getlist('age')
+
+        if adoption_availability:
+            queryset = queryset.filter(adoption_availability__in=adoption_availability)
+        if center:
+            # queryset = queryset.filter(center__in=center)
+            queryset = queryset.filter(center__icontains=center) # 해당 문자열 포함하는 모든 레코드 get
+        if breed:
+            queryset = queryset.filter(breed__in=breed)
+        if gender:
+            queryset = queryset.filter(gender__in=gender)
+        if age:
+            queryset = queryset.filter(age__in=age)
+
         return queryset
 
 class AdoptionCreate(generics.CreateAPIView):

@@ -9,6 +9,7 @@ class Today(models.Model):
     content = models.TextField("내용")
     created_at = models.DateTimeField("생성날짜", auto_now_add=True)
     writer = models.ForeignKey(to=User, on_delete=models.CASCADE, null=True, blank=True)
+    likes = models.IntegerField(default=0)
 
 def image_upload_path(instance, filename):
     return f'{instance.today.id}/{filename}'
@@ -16,3 +17,6 @@ def image_upload_path(instance, filename):
 class Images(models.Model):
     today = models.ForeignKey(to=Today, on_delete=models.CASCADE, related_name='image', default="")
     image = models.ImageField(verbose_name="이미지", null = True, blank=True, upload_to=image_upload_path)
+class TodayLiked(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    today = models.ForeignKey(Today, on_delete=models.CASCADE)

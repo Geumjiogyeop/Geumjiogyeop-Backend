@@ -7,6 +7,7 @@ class UserManager(BaseUserManager):
             raise ValueError('Users must have an phonenumber')
         user = self.model(
             phonenumber=phonenumber,
+            **kwargs # 추가
         )
         user.set_password(password)
         user.save(using=self._db)

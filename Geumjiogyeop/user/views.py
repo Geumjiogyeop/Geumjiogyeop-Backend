@@ -26,6 +26,7 @@ class UserRegisterView(APIView):
             serializer.save()
 
             return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 # 로그인
 class UserLoginView(APIView):
@@ -152,22 +153,51 @@ class UserDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class UserAdoptionListView(APIView):
-    def get(self, request, pk):
+    def get(self, request): # , pk
         try:
-            user = User.objects.get(user_id=pk)
-            adoptions = Adoption.objects.filter(user_id=user)
+            token = request.COOKIES.get('jwt')
+
+            if not token :
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            user = User.objects.get(user_id=payload['user_id'])
+            # user = User.objects.get(user_id=payload['user_id']).first()
+            
+            # serializer = UserDetailSerializer(user)
+
+            # user = User.objects.get(user_id=pk)
+            # adoptions = Adoption.objects.filter(user_id=user)
             serializer = UserAdoptionListSerializer(user)
             return Response(serializer.data)
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         
 class UserAdoptionDetailView(APIView):
-    def get(self, request, pk, adoption_pk):
+    def get(self, request, adoption_pk): # , pk
         try:
-            user = User.objects.get(user_id=pk)
-            adoption = Adoption.objects.get(adoption_id=adoption_pk, user_id=user)
+            token = request.COOKIES.get('jwt')
+
+            if not token :
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            user = User.objects.get(user_id=payload['user_id'])
+
+            # user = User.objects.get(user_id=pk)
+            # adoption = Adoption.objects.get(adoption_id=adoption_pk, user_id=user)
             # serializer = UserAdoptionDetailSerializer(user)
-            serializer = AdoptionSerializer(adoption)
+            serializer = UserAdoptionDetailSerializer(user)
             return Response(serializer.data)
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)

@@ -32,8 +32,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     phonenumber = models.CharField(max_length=45, unique=True, null=False, blank=False)
     name = models.CharField(max_length=10, null=False, blank=False)
     birthday = models.CharField(max_length=8, null=False, blank=False) # YYYYMMDD
-    gender = models.CharField(max_length=1, null=False, blank=False) # 남(m), 여(f)
-    is_foreigner = models.BooleanField(default=False) # 내국인(False), 외국인(True)
+    # gender = models.CharField(max_length=1, null=False, blank=False) # 여(True), 남(False)
+    gender = models.BooleanField(default=False) # 여(True), 남(False)
+    is_foreigner = models.BooleanField(default=True) # 내국인(True), 외국인(False) 반대로 설정
     
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

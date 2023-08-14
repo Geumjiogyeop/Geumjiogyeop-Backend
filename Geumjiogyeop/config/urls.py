@@ -21,6 +21,8 @@ from django.urls import path, include
 from rest_framework import routers
 from reports.views import ReportModelViewSet
 from todays.views import TodayViewSet
+from user.views import *
+from adoption.views import *
 
 from django.urls import re_path
 from rest_framework import permissions
@@ -32,6 +34,19 @@ router.register('today', TodayViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('admin/', admin.site.urls),
+    path("user/signin", UserRegisterView.as_view()),
+    path("user/login/", UserLoginView.as_view()),
+    path("user/logout/", UserLogoutView.as_view()),
+    path("user/view/", UserDetailView.as_view()),
+    # path("user/<int:pk>/register-adoption", UserAdoptionListView.as_view()),
+    path("user/register-adoption", UserAdoptionListView.as_view()),
+    # path("user/<int:pk>/register-adoption/<int:adoption_pk>", UserAdoptionDetailView.as_view()),
+    path("user/register-adoption/<int:adoption_pk>", UserAdoptionDetailView.as_view()),
+    path("adoption/", AdoptionList.as_view()),
+    path("adoption/create", AdoptionCreate.as_view()),
+    path("adoption/<int:pk>", AdoptionDetail.as_view()),
+    path("adoption/<int:pk>/likes", AdoptionLikeView.as_view()),
+    path("adoption/<int:pk>/cancellikes", AdoptionCancelLikeView.as_view()),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

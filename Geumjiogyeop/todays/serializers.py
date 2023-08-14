@@ -68,10 +68,18 @@ class TodaySerializer(serializers.ModelSerializer):
     
 class TodayRetrieveSerializer(serializers.ModelSerializer):
     editable = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+
     class Meta:
         model = Today
-        fields = ['title', 'writer', 'content', 'created_at', 'editable', 'likes']
+        fields = ['title', 'writer', 'content', 'created_at', 'editable', 'likes', 'images']
         depth = 1
+        
+	#게시글에 등록된 이미지들 가지고 오기
+    def get_images(self, obj):
+        image = Images.objects.filter(today = obj)
+        print(image)
+        return TodayImageSerializer(instance=image, many=True).data
 
     def get_editable(self, obj):
         try:

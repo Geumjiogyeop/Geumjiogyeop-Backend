@@ -17,6 +17,12 @@ class TodayViewSet(ModelViewSet):
     queryset = Today.objects.all().order_by('-created_at')
     serializer_class = TodaySerializer
 
+    def list(self, request, pk=None):
+        queryset = Today.objects.all().order_by('-created_at')
+        serializer = TodaySerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
     def retrieve(self, request, pk=None):
         queryset = Today.objects.all()
         today = get_object_or_404(queryset, pk=pk)

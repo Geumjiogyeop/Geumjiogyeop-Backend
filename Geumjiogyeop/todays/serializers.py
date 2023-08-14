@@ -32,7 +32,6 @@ class TodaySerializer(serializers.ModelSerializer):
         depth = 1
     
     def create(self, validated_data):
-        image_set = self.context['request'].FILES
         try:
             token = self.context['request'].COOKIES.get('jwt')
 
@@ -49,8 +48,9 @@ class TodaySerializer(serializers.ModelSerializer):
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         instance = Today.objects.create(**validated_data, writer = user)
+        image_set = self.context['request'].FILES
         for image_data in image_set.getlist('image'):
-            Images.objects.create(today=instance, image=image_data, writer = user)
+            Images.objects.create(today=instance, image=image_data)
         return instance
 
     def update(self, instance, validated_data):

@@ -1,12 +1,16 @@
+from django.conf import settings
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 from .models import Today, TodayLiked
+from user.models import User
 from rest_framework.decorators import api_view, action
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from .serializers import TodayImageSerializer, TodaySerializer, TodayRetrieveSerializer, TodayLikedSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import status
+import jwt
 # Create your views here.
 
 class TodayViewSet(ModelViewSet):
@@ -22,25 +26,55 @@ class TodayViewSet(ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def my(self, request):
-        todays = Today.objects.filter(writer = request.user)
+        try:
+            token = request.COOKIES.get('jwt')
+
+            if not token :
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            user = User.objects.get(user_id=payload['user_id'])
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        todays = Today.objects.filter(writer = user)
         serializer = TodaySerializer(todays, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['patch'])
     def like(self, request, pk=None):
+        try:
+            token = request.COOKIES.get('jwt')
+
+            if not token :
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            user = User.objects.get(user_id=payload['user_id'])
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        
         instance = self.get_object()
-        if TodayLiked.objects.filter(user = request.user, today = instance).exists():
+        if TodayLiked.objects.filter(user = user, today = instance).exists():
             instance.likes -= 1
             instance.save()
-            TodayLiked.objects.filter(user = request.user, today = instance).delete()
+            TodayLiked.objects.filter(user = user, today = instance).delete()
         else:
             instance.likes += 1
             instance.save()
-            data = {"user": request.user.id, "today" : instance.id}
+            data = {"user": user.user_id, "today" : instance.id}
 
             serializer = TodayLikedSerializer(data = data)
             if serializer.is_valid(raise_exception=True):
-                print("2123123")
                 serializer.save()
 
         return Response(status = status.HTTP_200_OK)

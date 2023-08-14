@@ -3,7 +3,12 @@ from django.conf import settings
 from rest_framework.serializers import ModelSerializer,HyperlinkedModelSerializer
 from rest_framework import serializers
 from .models import Today, Images, TodayLiked
+from user.models import User
 from rest_framework.fields import CurrentUserDefault
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework import status
+import jwt
+from rest_framework.response import Response
 
 class TodayImageSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True)
@@ -25,13 +30,27 @@ class TodaySerializer(serializers.ModelSerializer):
         model = Today
         fields = '__all__'
         depth = 1
-
+    
     def create(self, validated_data):
-        instance = Today.objects.create(**validated_data)
         image_set = self.context['request'].FILES
-        if self.context['request'].user.is_authenticated:
-            for image_data in image_set.getlist('image'):
-                Images.objects.create(today=instance, image=image_data, writer = self.context['request'].user)
+        try:
+            token = self.context['request'].COOKIES.get('jwt')
+
+            if not token :
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            user = User.objects.get(user_id=payload['user_id'])
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        instance = Today.objects.create(**validated_data, writer = user)
+        for image_data in image_set.getlist('image'):
+            Images.objects.create(today=instance, image=image_data, writer = user)
         return instance
 
     def update(self, instance, validated_data):
@@ -55,9 +74,24 @@ class TodayRetrieveSerializer(serializers.ModelSerializer):
         depth = 1
 
     def get_editable(self, obj):
-        print("Current@@@@@@@@", self.context.user)
+        try:
+            token = self.context.COOKIES.get('jwt')
+
+            if not token :
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            user = User.objects.get(user_id=payload['user_id'])
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        print("Current@@@@@@@@", self.context.COOKIES.get('jwt'))
         print("writer@@@@@@@", obj.writer)
-        if self.context.user == obj.writer:
+        if user == obj.writer:
             return True
         else:
             return False

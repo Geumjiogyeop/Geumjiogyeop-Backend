@@ -2,7 +2,11 @@ from rest_framework import generics, status, filters
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from .models import Adoption, UserLikedAdoption
+from user.models import User
 from .serializers import AdoptionListSerializer, AdoptionCreateSerializer, AdoptionDetailSerializer
+from rest_framework.exceptions import AuthenticationFailed
+import jwt
+from django.conf import settings
 
 class AdoptionList(generics.ListAPIView):
     serializer_class = AdoptionListSerializer
@@ -38,16 +42,30 @@ class AdoptionCreate(generics.CreateAPIView):
     # permission_classes = [IsAuthenticatedOrReadOnly]
     
     def post(self, request, *args, **kwargs):
-        serializer = AdoptionCreateSerializer(data=request.data)
+        try:
+            token = request.COOKIES.get('jwt')
 
-        if serializer.is_valid():
-            # adoption = Adoption.objects.create(
-            # )
-            # serializer.validated_data['user'] = self.request.user
-            adoption = serializer.save()
-        
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if not token :
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+                user = User.objects.get(user_id=payload['user_id'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+            except User.DoesNotExist:
+                raise AuthenticationFailed('User not found.')
+            
+            serializer = AdoptionCreateSerializer(data=request.data, context={'user': user})
+
+            if serializer.is_valid():
+                adoption = serializer.save()
+            
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except AuthenticationFailed as e:
+            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
 class AdoptionDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset= Adoption.objects.all()
@@ -56,22 +74,9 @@ class AdoptionDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
-        # if kwargs.get('update'):
-        #     # serializer = AdoptionDetailSerializer(data=request.data)
-        #     serializer = self.get_serializer(self.get_object(), data=request.data)
-
-        #     if serializer.is_valid():
-        #         serializer.save()
-        #         return Response(serializer.data, status=status.HTTP_200_OK)
-        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
-        # if kwargs.get('delete'):
-        #     instance = self.get_object()
-        #     instance.delete()
-        #     return Response(status=status.HTTP_204_NO_CONTENT)
-        # return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class AdoptionLikeView(generics.GenericAPIView):
     queryset = Adoption.objects.all()

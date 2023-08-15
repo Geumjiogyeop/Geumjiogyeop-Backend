@@ -87,16 +87,16 @@ class UserLoginView(APIView):
 class UserLogoutView(APIView):
     # permission_classes = [IsAuthenticated]
     def post(self,req):
-        # token = req.COOKIES.get('jwt')
+        token = req.COOKIES.get('jwt')
 
-        # if not token :
-        #     raise AuthenticationFailed('UnAuthenticated!')
+        if not token :
+            raise AuthenticationFailed('UnAuthenticated!')
 
-        # try :
-        #     payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        try :
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
 
-        # except jwt.ExpiredSignatureError:
-        #     raise AuthenticationFailed('UnAuthenticated!')
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('UnAuthenticated!')
 
         res = Response()
         res.delete_cookie('jwt')

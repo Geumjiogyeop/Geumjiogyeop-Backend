@@ -81,21 +81,72 @@ class AdoptionDetail(generics.RetrieveUpdateDestroyAPIView):
 class AdoptionLikeView(generics.GenericAPIView):
     queryset = Adoption.objects.all()
 
+    def get_object(self):
+        adoption_id = self.kwargs.get('pk')  # Assuming you have an 'pk' URL parameter for the adoption ID
+        return generics.get_object_or_404(Adoption, pk=adoption_id)
+
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
-        # user = request.user
 
-        # like, created = UserLikedAdoption.objects.get_or_create(user=user, adoption=instance)
-        # if created:
-        instance.likes += 1
-        instance.save()
-        return Response(instance.likes)
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+        
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            user_id = payload['user_id']
+
+            # Check if the user already liked this adoption
+            liked_adoption = UserLikedAdoption.objects.filter(user_id=user_id, adoption=instance).first()
+            if liked_adoption:
+                return Response({'detail': 'You have already liked this adoption.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Save the like in UserLikedAdoption model
+            user_liked_adoption = UserLikedAdoption(user_id=user_id, adoption=instance)
+            user_liked_adoption.save()
+
+            # Increment the likes count in Adoption model
+            instance.likes += 1
+            instance.save()
+
+            return Response({'detail': 'Adoption liked successfully.'}, status=status.HTTP_200_OK)
+
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated!')
 
 class AdoptionCancelLikeView(generics.GenericAPIView):
     queryset = Adoption.objects.all()
+    
+    def get_object(self):
+        adoption_id = self.kwargs.get('pk')  # Assuming you have an 'pk' URL parameter for the adoption ID
+        return generics.get_object_or_404(Adoption, pk=adoption_id)
 
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.likes -= 1
-        instance.save()
-        return Response(instance.likes)
+        
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            user_id = payload['user_id']  # Assuming 'user_id' is in the payload
+
+            # Check if the user liked this adoption
+            liked_adoption = UserLikedAdoption.objects.filter(user_id=user_id, adoption=instance).first()
+            if not liked_adoption:
+                return Response({'detail': 'You have not liked this adoption.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Remove the user's like from UserLikedAdoption model
+            liked_adoption.delete()
+
+            # Decrement the likes count in Adoption model
+            instance.likes -= 1
+            instance.save()
+
+            return Response({'detail': 'Like canceled successfully.'}, status=status.HTTP_200_OK)
+
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated!')

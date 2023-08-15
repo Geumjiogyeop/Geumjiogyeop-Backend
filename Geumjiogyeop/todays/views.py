@@ -6,7 +6,7 @@ from user.models import User
 from rest_framework.decorators import api_view, action
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from .serializers import TodayImageSerializer, TodaySerializer, TodayRetrieveSerializer, TodayLikedSerializer
+from .serializers import TodayImageSerializer, TodaySerializer, TodayRetrieveSerializer, TodayLikedSerializer, TodayListSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import status
@@ -16,12 +16,6 @@ import jwt
 class TodayViewSet(ModelViewSet):
     queryset = Today.objects.all().order_by('-created_at')
     serializer_class = TodaySerializer
-
-    def list(self, request, pk=None):
-        queryset = Today.objects.all().order_by('-created_at')
-        serializer = TodaySerializer(queryset, many=True)
-
-        return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
         queryset = Today.objects.all()
@@ -48,7 +42,8 @@ class TodayViewSet(ModelViewSet):
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         todays = Today.objects.filter(writer = user)
-        serializer = TodaySerializer(todays, many=True)
+        serializer = TodayListSerializer(todays, many=True)
+        print(serializer.data)
         return Response(serializer.data)
 
     @action(detail=True, methods=['patch'])

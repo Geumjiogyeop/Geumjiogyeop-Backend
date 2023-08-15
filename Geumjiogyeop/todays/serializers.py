@@ -17,14 +17,48 @@ class TodayImageSerializer(serializers.ModelSerializer):
         model = Images
         fields = ['image']
 
-
-class TodaySerializer(serializers.ModelSerializer):
+class TodayListSerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
 
 	#게시글에 등록된 이미지들 가지고 오기
     def get_images(self, obj):
-        image = obj.image.all() 
+        image = obj.image.all()
         return TodayImageSerializer(instance=image, many=True, context=self.context).data
+
+    class Meta:
+        model = Today
+        fields = '__all__'
+        depth = 1
+
+class TodaySerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
+    editable = serializers.SerializerMethodField()
+
+	#게시글에 등록된 이미지들 가지고 오기
+    def get_images(self, obj):
+        image = obj.image.all()
+        return TodayImageSerializer(instance=image, many=True, context=self.context).data
+    
+    def get_editable(self, obj):
+        try:
+            token = self.context['request'].COOKIES.get('jwt')
+
+            if not token :
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            user = User.objects.get(user_id=payload['user_id'])
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        if user == obj.writer:
+            return True
+        else:
+            return False
 
     class Meta:
         model = Today

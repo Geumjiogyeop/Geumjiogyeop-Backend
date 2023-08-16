@@ -15,6 +15,8 @@ THIRD_PARTY_APPS += [
 ]
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
 
+APPEND_SLASH = False
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

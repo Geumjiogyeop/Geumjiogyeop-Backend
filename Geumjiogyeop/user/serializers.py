@@ -73,13 +73,17 @@ class AdoptionSerializer(serializers.ModelSerializer):
         model = Adoption
         fields = '__all__'
 
-# user가 등록한 adoption 글 list 조회용 시리얼라이저
+# user가 등록한 adoption 글 list(register-adoption용) 및 count 조회(my용)용 시리얼라이저
 class UserAdoptionListSerializer(serializers.ModelSerializer):
     adoptions = AdoptionSerializer(many=True)
+    adoptions_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['user_id', 'name', 'adoptions']
+        fields = ['user_id', 'name', 'adoptions', 'adoptions_count']
+
+    def get_adoptions_count(self, obj):
+        return obj.adoptions.count()
 
 # user가 등록한 adoption 글 detail 조회용 시리얼라이저
 class UserAdoptionDetailSerializer(serializers.ModelSerializer):

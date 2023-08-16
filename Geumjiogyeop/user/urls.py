@@ -12,4 +12,5 @@ urlpatterns = [
     path("register-adoption/<int:adoption_pk>", UserAdoptionDetailView.as_view()),
     # path("<int:pk>/liked-adoption-list", UserLikedAdoptionListView.as_view()),
     path("liked-adoption-list", UserLikedAdoptionListView.as_view()),
+    path("my", UserAdoptionListView.as_view()),
 ]

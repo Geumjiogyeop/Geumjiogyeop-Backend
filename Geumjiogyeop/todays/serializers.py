@@ -131,7 +131,7 @@ class TodayRetrieveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Today
-        fields = ['title', 'writer', 'content', 'created_at', 'editable', 'likes', 'images', 'isLike']
+        fields = ['id','title', 'writer', 'content', 'created_at', 'editable', 'likes', 'images', 'isLike']
         depth = 1
         
 	#게시글에 등록된 이미지들 가지고 오기

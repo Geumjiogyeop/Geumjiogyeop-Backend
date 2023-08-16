@@ -41,6 +41,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
         if identifier.isdigit() and len(identifier) >= 11:
             user = User.objects.filter(phonenumber=identifier).first()
         else:
+            # user_id = int(identifier) - 1000 # 1001과 같은 값으로 로그인할 수 있도록
             user = User.objects.filter(user_id=identifier).first()
 
         if user is None:

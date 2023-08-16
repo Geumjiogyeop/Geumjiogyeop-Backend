@@ -48,5 +48,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 	# 핸드폰 번호로 로그인
     USERNAME_FIELD = 'phonenumber'
 
-    def __str__(self):
-        return str(1000 + self.user_id) # 1001부터 시작하는 문자열로 변환
+    # def __str__(self):
+    #     return str(1000 + self.user_id) # 1001부터 시작하는 문자열로 변환
+     
+    def save(self, *args, **kwargs):
+        if not self.user_id:
+            last_user = User.objects.order_by('-user_id').first()
+            if last_user:
+                self.user_id = last_user.user_id + 1
+            else:
+                self.user_id = 1001  # Start from 1001 if no users exist
+        super(User, self).save(*args, **kwargs)

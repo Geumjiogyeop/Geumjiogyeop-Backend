@@ -20,7 +20,7 @@ class AdoptionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Adoption
         fields = ['name', 'breed', 'gender', 'age', 'weight', 
-                  'is_neutralized', 'center', 'introduction', 'letter', 'photo'] # , 'user'
+                  'is_neutralized', 'center', 'introduction', 'letter', 'photo', 'created_at'] # , 'user'
     
     def create(self, validated_data):
         user = self.context['user']

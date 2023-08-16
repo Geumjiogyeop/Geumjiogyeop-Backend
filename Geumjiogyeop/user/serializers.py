@@ -1,5 +1,5 @@
 from .models import User
-from adoption.models import Adoption
+from adoption.models import Adoption, UserLikedAdoption
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -52,6 +52,7 @@ class AdoptionSerializer(serializers.ModelSerializer):
         model = Adoption
         fields = '__all__'
 
+# user가 등록한 adoption 글 list 조회용 시리얼라이저
 class UserAdoptionListSerializer(serializers.ModelSerializer):
     adoptions = AdoptionSerializer(many=True)
 
@@ -59,9 +60,26 @@ class UserAdoptionListSerializer(serializers.ModelSerializer):
         model = User
         fields = ['user_id', 'name', 'adoptions']
 
+# user가 등록한 adoption 글 detail 조회용 시리얼라이저
 class UserAdoptionDetailSerializer(serializers.ModelSerializer):
     adoptions = AdoptionSerializer(many=True)
 
     class Meta:
         model = User
         fields = ['adoptions']
+
+# 관심공고 조회 관련 시리얼라이저1
+class LikedAdoptionSerializer(serializers.ModelSerializer):
+    adoption = AdoptionSerializer()
+
+    class Meta:
+        model = UserLikedAdoption
+        fields = ['adoption']
+
+# 관심공고 조회 관련 시리얼라이저2
+class UserLikedAdoptionSerializer(serializers.ModelSerializer):
+    liked_adoptions = LikedAdoptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['user_id', 'liked_adoptions']

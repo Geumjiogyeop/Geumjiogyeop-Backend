@@ -8,6 +8,7 @@ from rest_framework.exceptions import AuthenticationFailed
 import jwt
 from django.conf import settings
 
+# adoption list 필터링 적용
 class AdoptionList(generics.ListAPIView):
     serializer_class = AdoptionListSerializer
 
@@ -36,6 +37,7 @@ class AdoptionList(generics.ListAPIView):
 
         return queryset
 
+# adoption 글 create - 로그인한 user만 create 가능
 class AdoptionCreate(generics.CreateAPIView):
     queryset= Adoption.objects.all()
     serializer_class= AdoptionCreateSerializer
@@ -67,6 +69,7 @@ class AdoptionCreate(generics.CreateAPIView):
         except AuthenticationFailed as e:
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
+# adoption detail 상세정보 get, patch, delete
 class AdoptionDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset= Adoption.objects.all()
     serializer_class= AdoptionDetailSerializer
@@ -78,11 +81,12 @@ class AdoptionDetail(generics.RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
+# adoption에 좋아요 누르기 - 로그인한 user만 가능
 class AdoptionLikeView(generics.GenericAPIView):
     queryset = Adoption.objects.all()
 
     def get_object(self):
-        adoption_id = self.kwargs.get('pk')  # Assuming you have an 'pk' URL parameter for the adoption ID
+        adoption_id = self.kwargs.get('pk')
         return generics.get_object_or_404(Adoption, pk=adoption_id)
 
     def get(self, request, *args, **kwargs):
@@ -97,16 +101,16 @@ class AdoptionLikeView(generics.GenericAPIView):
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             user_id = payload['user_id']
 
-            # Check if the user already liked this adoption
+            # 이미 좋아요를 눌렀었는지 확인
             liked_adoption = UserLikedAdoption.objects.filter(user_id=user_id, adoption=instance).first()
             if liked_adoption:
                 return Response({'detail': 'You have already liked this adoption.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Save the like in UserLikedAdoption model
+            # UserLikedAdoption 모델에 저장
             user_liked_adoption = UserLikedAdoption(user_id=user_id, adoption=instance)
             user_liked_adoption.save()
 
-            # Increment the likes count in Adoption model
+            # likes 값 증가
             instance.likes += 1
             instance.save()
 
@@ -115,11 +119,12 @@ class AdoptionLikeView(generics.GenericAPIView):
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Unauthenticated!')
 
+# adoption에 좋아요 취소하기 - 로그인한 user만 가능
 class AdoptionCancelLikeView(generics.GenericAPIView):
     queryset = Adoption.objects.all()
     
     def get_object(self):
-        adoption_id = self.kwargs.get('pk')  # Assuming you have an 'pk' URL parameter for the adoption ID
+        adoption_id = self.kwargs.get('pk')
         return generics.get_object_or_404(Adoption, pk=adoption_id)
 
     def get(self, request, *args, **kwargs):
@@ -134,15 +139,15 @@ class AdoptionCancelLikeView(generics.GenericAPIView):
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             user_id = payload['user_id']  # Assuming 'user_id' is in the payload
 
-            # Check if the user liked this adoption
+            # 이미 좋아요를 눌렀었는지 확인
             liked_adoption = UserLikedAdoption.objects.filter(user_id=user_id, adoption=instance).first()
             if not liked_adoption:
                 return Response({'detail': 'You have not liked this adoption.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Remove the user's like from UserLikedAdoption model
+            # UserLikedAdoption 모델에서 해당되는 like 레코드 삭제
             liked_adoption.delete()
 
-            # Decrement the likes count in Adoption model
+            # likes 값 감소
             instance.likes -= 1
             instance.save()
 

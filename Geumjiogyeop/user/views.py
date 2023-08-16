@@ -1,14 +1,15 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import User
-from adoption.models import Adoption
-from .serializers import UserRegisterSerializer, UserLoginSerializer, UserDetailSerializer, UserAdoptionDetailSerializer, UserAdoptionListSerializer, AdoptionSerializer
+from adoption.models import Adoption, UserLikedAdoption
+from .serializers import *
 from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.renderers import JSONRenderer
 import jwt, datetime
 # from jwt.exceptions import ExpiredSignatureError, ImmatureSignatureError
@@ -151,7 +152,8 @@ class UserDetailView(APIView):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        
+# user가 등록한 입양공고 list 조회
 class UserAdoptionListView(APIView):
     def get(self, request): # , pk
         try:
@@ -167,17 +169,13 @@ class UserAdoptionListView(APIView):
                 raise AuthenticationFailed('UnAuthenticated!')
 
             user = User.objects.get(user_id=payload['user_id'])
-            # user = User.objects.get(user_id=payload['user_id']).first()
-            
-            # serializer = UserDetailSerializer(user)
 
-            # user = User.objects.get(user_id=pk)
-            # adoptions = Adoption.objects.filter(user_id=user)
             serializer = UserAdoptionListSerializer(user)
             return Response(serializer.data)
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         
+# user가 등록한 입양공고 detail 조회
 class UserAdoptionDetailView(APIView):
     def get(self, request, adoption_pk): # , pk
         try:
@@ -203,3 +201,16 @@ class UserAdoptionDetailView(APIView):
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         except Adoption.DoesNotExist:
             return Response({"error": "Adoption not found for the given user."}, status=status.HTTP_404_NOT_FOUND)
+
+# user 관심공고 list 조회   
+class UserLikedAdoptionListView(generics.ListAPIView):
+    serializer_class = LikedAdoptionSerializer
+
+    def get_queryset(self):
+        token = self.request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        return UserLikedAdoption.objects.filter(user=payload['user_id'])

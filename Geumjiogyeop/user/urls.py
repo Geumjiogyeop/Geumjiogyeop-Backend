@@ -10,4 +10,6 @@ urlpatterns = [
     path("register-adoption", UserAdoptionListView.as_view()),
     # path("<int:pk>/register-adoption/<int:adoption_pk>", UserAdoptionDetailView.as_view()),
     path("register-adoption/<int:adoption_pk>", UserAdoptionDetailView.as_view()),
+    # path("<int:pk>/liked-adoption-list", UserLikedAdoptionListView.as_view()),
+    path("liked-adoption-list", UserLikedAdoptionListView.as_view()),
 ]

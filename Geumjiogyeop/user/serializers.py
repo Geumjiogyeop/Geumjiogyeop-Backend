@@ -27,18 +27,38 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 # 로그인용 시리얼라이저
 class UserLoginSerializer(serializers.ModelSerializer):
-    # account = serializers.SerializerMethodField()
+    identifier = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
-        fields = ['user_id', 'phonenumber', 'password']
-        # fields = ['account', 'password']
+        # fields = ['user_id', 'phonenumber', 'password']
+        fields = ['identifier', 'password']
+
+    def validate(self, attrs):
+        identifier = attrs.get('identifier')
+        password = attrs.get('password')
+
+        if identifier.isdigit() and len(identifier) >= 11:
+            user = User.objects.filter(phonenumber=identifier).first()
+        else:
+            user = User.objects.filter(user_id=identifier).first()
+
+        if user is None:
+            raise serializers.ValidationError('User does not exist.')
+
+        if not user.check_password(password):
+            raise serializers.ValidationError('Incorrect password.')
+
+        attrs['user'] = user
+        return attrs
 
     def create(self, validated_data):
-        user = User.objects.create_user(
-            user_id = validated_data['user_id'],
-            phonenumber = validated_data['phonenumber'],
-            password = validated_data['password']
-        )
+        # user = User.objects.create_user(
+        #     user_id = validated_data['user_id'],
+        #     phonenumber = validated_data['phonenumber'],
+        #     password = validated_data['password']
+        # )
+        user = validated_data['user']
         return user
 
 # 계정 확인용 시리얼라이저

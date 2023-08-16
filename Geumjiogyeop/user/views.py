@@ -34,47 +34,31 @@ class UserLoginView(APIView):
     queryset = User.objects.all()
     serializer_class = UserLoginSerializer
     def post(self,req):
-        # account = req.data['account']
-        # user_id = req.data['user_id']
-        phonenumber = req.data['phonenumber']
-        password = req.data['password']
+        # phonenumber = req.data['phonenumber']
+        # password = req.data['password']
 
-        # account_data = None
-        # if User.objects.filter(user_id=account).exists():
-        #     account_data = User.objects.get(user_id=account)
-        #     user = User.objects.filter(user_id=account_data).first()
-        # elif User.objects.filter(phonenumber=account).exists():
-        #     account_data = User.objects.get(phonenumber=account)
-        #     user = User.objects.filter(phonenumber=account_data).first()
+        # user = User.objects.filter(phonenumber=phonenumber).first()
+        # serialize_user = UserLoginSerializer(user)
+        # json_user = JSONRenderer().render(serialize_user.data)
 
-        # if user_id is not None:
-        #     user = User.objects.filter(user_id=user_id).first()
-        # elif phonenumber is not None:
-        user = User.objects.filter(phonenumber=phonenumber).first()
-        serialize_user = UserLoginSerializer(user)
-        json_user = JSONRenderer().render(serialize_user.data)
+        serializer = UserLoginSerializer(data=req.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.validated_data['user']
 
         if user is None :
             raise AuthenticationFailed('User does not found!')
-
-        # is same?
-        if not user.check_password(password) :
-            raise AuthenticationFailed("Incorrect password!")
         
         current_time = datetime.now(timezone.utc)
         expiration_time = current_time + timedelta(minutes=60)
 
         ## JWT 구현 부분
         payload = {
-            # 'id' : int(user.user_id),
             'user_id' : int(user.user_id), # KeyError 발생 때문에 'user_id'로 변경
-            # 'exp' : datetime.datetime.now() + datetime.timedelta(minutes=60),
             'exp' : expiration_time,
-            # 'iat' : datetime.datetime.now()
             'iat' : current_time
         }
 
-        # AttributeError: 'str' object has no attribute 'decode' 때문에 decode 부분 삭제하니 정상적으로 동작
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256") # .decode("utf-8")
 
         res = Response()

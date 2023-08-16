@@ -6,9 +6,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import User
 from adoption.models import Adoption, UserLikedAdoption
+from todays.models import Today
 from .serializers import *
 from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed
+from adoption.serializers import AdoptionListSerializer
+from todays.serializers import TodayListSerializer
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.renderers import JSONRenderer
 import jwt, datetime
@@ -198,3 +201,20 @@ class UserLikedAdoptionListView(generics.ListAPIView):
 
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
         return UserLikedAdoption.objects.filter(user=payload['user_id'])
+    
+class MainView(APIView):
+    serializer_class = [AdoptionListSerializer, TodayListSerializer]
+    
+    def get(self,req):
+        queryset = Adoption.objects.all()
+        serializer = AdoptionListSerializer(queryset,many=True)
+        print("dfjsdfskd", serializer.data)
+        adoption = serializer.data
+        print("adkfsljfkd")
+        queryset = Today.objects.all()
+        serializer = TodayListSerializer(queryset, many=True)
+        today = serializer.data
+        print("dfksdfl")
+        return Response({"adoption" : adoption, "today" : today})
+
+

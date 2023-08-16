@@ -17,19 +17,6 @@ class TodayImageSerializer(serializers.ModelSerializer):
         model = Images
         fields = ['image']
 
-class TodayListSerializer(serializers.ModelSerializer):
-    images = serializers.SerializerMethodField()
-
-	#게시글에 등록된 이미지들 가지고 오기
-    def get_images(self, obj):
-        image = obj.image.all()
-        return TodayImageSerializer(instance=image, many=True, context=self.context).data
-
-    class Meta:
-        model = Today
-        fields = '__all__'
-        depth = 1
-
 class TodaySerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
@@ -122,6 +109,20 @@ class TodaySerializer(serializers.ModelSerializer):
         for image_data in image_set.getlist('image'):
             Images.objects.create(today=instance, image=image_data)
         return instance
+    
+class TodayListSerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
+
+	#게시글에 등록된 이미지들 가지고 오기
+    def get_images(self, obj):
+        print(self.context.get('request'))
+        image = obj.image.all()
+        return TodayImageSerializer(instance=image, many=True, context = {'request' : self.context.get('request')}).data
+
+    class Meta:
+        model = Today
+        fields = '__all__'
+        depth = 1
     
 class TodayRetrieveSerializer(serializers.ModelSerializer):
     editable = serializers.SerializerMethodField()

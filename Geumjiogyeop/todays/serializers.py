@@ -117,7 +117,6 @@ class TodaySerializer(serializers.ModelSerializer):
         image_delete = Images.objects.filter(today = instance)
         for image in image_delete:
             os.remove(os.path.join(settings.MEDIA_ROOT, str(instance.id), image.image.path))
-            print("삭제@@@@@@@@")
         image_delete.delete()
         image_set = self.context['request'].FILES
         for image_data in image_set.getlist('image'):
@@ -137,7 +136,6 @@ class TodayRetrieveSerializer(serializers.ModelSerializer):
 	#게시글에 등록된 이미지들 가지고 오기
     def get_images(self, obj):
         image = Images.objects.filter(today = obj)
-        print(image)
         return TodayImageSerializer(instance=image, many=True).data
 
     def get_editable(self, obj):
@@ -156,15 +154,12 @@ class TodayRetrieveSerializer(serializers.ModelSerializer):
             user = User.objects.get(user_id=payload['user_id'])
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-        print("Current@@@@@@@@", self.context.COOKIES.get('jwt'))
-        print("writer@@@@@@@", obj.writer)
         if user == obj.writer:
             return True
         else:
             return False
         
     def get_isLike(self, obj):
-        print("dfsdf")
         try:
             token = self.context.COOKIES.get('jwt')
 

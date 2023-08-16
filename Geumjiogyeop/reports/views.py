@@ -16,7 +16,6 @@ class ReportModelViewSet(ModelViewSet):
     def create(self, request):
         serializer = ReportBaseModelSerializer(data=request.data)
         victim_id = request.data['victim_id'][1:]
-        print('@@@@@@@@@',victim_id)
         try:
             user = User.objects.get(pk = victim_id)
         except User.DoesNotExist:

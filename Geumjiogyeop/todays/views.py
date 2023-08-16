@@ -43,7 +43,6 @@ class TodayViewSet(ModelViewSet):
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         todays = Today.objects.filter(writer = user)
         serializer = TodayListSerializer(todays, many=True)
-        print(serializer.data)
         return Response(serializer.data)
 
     @action(detail=True, methods=['patch'])

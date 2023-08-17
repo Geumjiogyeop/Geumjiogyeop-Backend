@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
 class AdoptionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Adoption
-        fields = ['name', 'gender', 'age', 'center', 'introduction', 'photo', 'likes']
+        fields = ['adoption_id', 'name', 'gender', 'age', 'center', 'introduction', 'photo', 'likes']
 
 class AdoptionCreateSerializer(serializers.ModelSerializer):
     # user = UserSerializer(many=True, read_only=True)
@@ -19,7 +19,7 @@ class AdoptionCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Adoption
-        fields = ['name', 'breed', 'gender', 'age', 'weight', 
+        fields = ['adoption_id', 'name', 'breed', 'gender', 'age', 'weight', 
                   'is_neutralized', 'center', 'introduction', 'letter', 'photo', 'created_at'] # , 'user'
     
     def create(self, validated_data):

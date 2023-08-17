@@ -101,6 +101,7 @@ class TodaySerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.content = validated_data.get('content', instance.content)
+        instance.save()
         image_delete = Images.objects.filter(today = instance)
         for image in image_delete:
             os.remove(os.path.join(settings.MEDIA_ROOT, str(instance.id), image.image.path))

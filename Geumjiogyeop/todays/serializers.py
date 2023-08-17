@@ -112,12 +112,35 @@ class TodaySerializer(serializers.ModelSerializer):
     
 class TodayListSerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
+    isLike = serializers.SerializerMethodField()
 
 	#게시글에 등록된 이미지들 가지고 오기
     def get_images(self, obj):
         print(self.context.get('request'))
         image = obj.image.all()
         return TodayImageSerializer(instance=image, many=True, context = {'request' : self.context.get('request')}).data
+    
+    def get_isLike(self, obj):
+        try:
+            token = self.context['request'].COOKIES.get('jwt')
+
+            if not token :
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            user = User.objects.get(user_id=payload['user_id'])
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        try: 
+            TodayLiked.objects.get(today = obj, user = user)
+        except TodayLiked.DoesNotExist:
+            return False
+        return True
 
     class Meta:
         model = Today

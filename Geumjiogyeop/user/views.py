@@ -11,7 +11,7 @@ from .serializers import *
 from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed
 from adoption.serializers import AdoptionListSerializer
-from todays.serializers import TodayListSerializer
+from todays.serializers import TodayListModelSerializer
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.renderers import JSONRenderer
 import jwt, datetime
@@ -203,7 +203,7 @@ class UserLikedAdoptionListView(generics.ListAPIView):
         return UserLikedAdoption.objects.filter(user=payload['user_id'])
     
 class MainView(APIView):
-    serializer_class = [AdoptionListSerializer, TodayListSerializer]
+    serializer_class = [AdoptionListSerializer, TodayListModelSerializer]
     
     def get(self,req):
         queryset = Adoption.objects.all()
@@ -212,7 +212,7 @@ class MainView(APIView):
         adoption = serializer.data
         print("adkfsljfkd")
         queryset = Today.objects.all()
-        serializer = TodayListSerializer(queryset, many=True)
+        serializer = TodayListModelSerializer(queryset, many=True)
         today = serializer.data
         print("dfksdfl")
         return Response({"adoption" : adoption, "today" : today})

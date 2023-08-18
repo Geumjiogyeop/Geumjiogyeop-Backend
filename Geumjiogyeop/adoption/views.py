@@ -3,10 +3,11 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 from .models import Adoption, UserLikedAdoption
 from user.models import User
-from .serializers import AdoptionListSerializer, AdoptionCreateSerializer, AdoptionDetailSerializer
+from .serializers import *
 from rest_framework.exceptions import AuthenticationFailed
 import jwt
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 # adoption list 필터링 적용
 class AdoptionList(generics.ListAPIView):
@@ -36,6 +37,30 @@ class AdoptionList(generics.ListAPIView):
             queryset = queryset.filter(age__in=age)
 
         return queryset
+
+    def get(self, request, *args, **kwargs):
+        try:
+            token = request.COOKIES.get('jwt')
+
+            if not token : # 로그인하지 않았다면
+                # raise AuthenticationFailed('UnAuthenticated!')
+                queryset = self.get_queryset()
+                serializer = self.get_serializer(queryset, many=True)
+                return Response(serializer.data)
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            user = User.objects.get(user_id=payload['user_id'])
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        adoptions = Adoption.objects.filter(user_id = user)
+        serializer = AdoptionLikedListSerializer(adoptions, many=True, context = {'request': request})
+
+        return Response(serializer.data)
 
 # adoption 글 create - 로그인한 user만 create 가능
 class AdoptionCreate(generics.CreateAPIView):

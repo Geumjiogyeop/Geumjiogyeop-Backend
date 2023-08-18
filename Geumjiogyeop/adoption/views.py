@@ -57,7 +57,8 @@ class AdoptionList(generics.ListAPIView):
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        adoptions = Adoption.objects.filter(user_id = user)
+        # adoptions = Adoption.objects.filter(user_id = user)
+        adoptions = Adoption.objects.all()
         serializer = AdoptionLikedListSerializer(adoptions, many=True, context = {'request': request})
 
         return Response(serializer.data)

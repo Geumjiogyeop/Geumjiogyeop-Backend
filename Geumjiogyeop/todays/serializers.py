@@ -17,6 +17,17 @@ class TodayImageSerializer(serializers.ModelSerializer):
         model = Images
         fields = ['image']
 
+class TodayListModelSerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
+
+    def get_images(self, obj):
+        image = obj.image.all()
+        return TodayImageSerializer(instance=image, many=True, context=self.context).data
+
+    class Meta:
+        model = Today
+        fields = '__all__'
+
 class TodaySerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()

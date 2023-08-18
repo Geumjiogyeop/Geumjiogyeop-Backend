@@ -6,6 +6,6 @@ from .models import Today, Images
 class TodayModelAdmin(admin.ModelAdmin):
     pass
 
-@admin.reister(Images)
+@admin.register(Images)
 class ImageModelAdmin(admin.ModelAdmin):
     pass

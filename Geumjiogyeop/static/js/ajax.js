@@ -5,7 +5,7 @@ $("#submitBtn").click(function () {
     if (type == "type-etc") {
       $.ajax({
         type: "post", // 타입 (get, post, put 등등)
-        url: "http://=175.45.194.93//report/", // 요청할 서버url
+        url: "http://175.45.194.93/report/", // 요청할 서버url
         async: true, // 비동기화 여부 (default : true)
         headers: {
           // Http header
@@ -42,7 +42,7 @@ $("#submitBtn").click(function () {
     } else {
       $.ajax({
         type: "post", // 타입 (get, post, put 등등)
-        url: "http://175.45.194.93//report/", // 요청할 서버url
+        url: "http://175.45.194.93/report/", // 요청할 서버url
         async: true, // 비동기화 여부 (default : true)
         headers: {
           // Http header

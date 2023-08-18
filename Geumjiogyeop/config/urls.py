@@ -23,6 +23,7 @@ from reports.views import ReportModelViewSet
 from todays.views import TodayViewSet
 from user.views import *
 from adoption.views import *
+from reports.views import html_form_view
 
 from django.urls import re_path
 from rest_framework import permissions
@@ -36,6 +37,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("user/", include("user.urls")),
     path("adoption/", include("adoption.urls")),
+    path("reportView", html_form_view)
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

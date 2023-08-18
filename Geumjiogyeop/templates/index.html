@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+    <title>금지옥엽 신고 접수</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <div id="main-container">
+        <p style="text-align: center;color: #000;
+        text-align: center;
+        font-family: NanumGothic;
+        font-size: 17px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 21px; /* 123.529% */
+        letter-spacing: -0.32px;">신고접수</p>
+        <div id="first-content-box">
+            <p class="content-title">사고자와의 관계</p>
+            <div id="fisrt-select-box" class="select-box" style="width: 272px;">
+                <button class="first-btn" id="me">본인</button>
+                <button class="first-btn" id="family">가족</button>
+                <button class="first-btn" id="rel-etc">기타</button>
+            </div>
+        </div>
+        <div id="name-content-box">
+            <p class="content-title">사고자 이름</p>
+            <input style="width: 217px;" type="text" name="" id="name" placeholder="">
+        </div>
+        <div id="second-content-box">
+            <p class="content-title">사고자 ID</p>
+            <input style="width: 217px;" type="text" name="" id="userID" placeholder="#1234">
+        </div>
+        <div id="third-content-box">
+            <p class="content-title">사고일시</p>
+            <input type="date" name="" id="date" value="0000-00-00">
+        </div>
+        <!-- <div id="area-box">
+            <p class="content-title">사고지역</p>
+
+            <select name="addressRegion" id="addressRegion1"></select>
+            <select name="addressDo" id="addressDo1"></select>
+            <select name="addressSiGunGu" id="addressSiGunGu1"></select>
+        </div> -->
+        <div id="fourth-content-box">
+            <p class="content-title">사고유형</p>
+            <div id="fourth-select-box" class="select-box" style="width: 272px;">
+                <button class="fourth-btn" id="admission">입원</button>
+                <button class="fourth-btn" id="death">사망</button>
+                <button class="fourth-btn" id="type-etc">기타</button>
+            </div>
+            <textarea id="etc-textarea" placeholder="자연재해 피해, 지병 등 기타 사유를 작성해주세요."></textarea>
+        </div>
+        <div id="check-box">
+            <div id="check">
+                <div class="circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" viewBox="0 0 27 27" fill="none">
+                        <circle id="circle-fill" cx="13.5" cy="13.5" r="13.5" fill="#333333" fill-opacity="0.1" />
+                    </svg>
+                </div>
+                <div class="check-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17" fill="none">
+                        <path d="M3.57812 9.20312L6.39062 12.0156L13.4219 4.98438" stroke="white" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+            </div>
+
+            <p style="color: rgba(0, 0, 0, 0.50);
+            font-family: NanumGothic;
+            font-size: 15px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 21px; /* 140% */
+            letter-spacing: -0.32px;
+            opacity: 50%;">모든 작성 내용은 사실에 근거합니다.</p>
+        </div>
+        <p style="color: rgba(0, 0, 0, 0.50);
+        font-family: NanumGothic;
+        font-size: 10px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 21px; /* 210% */
+        letter-spacing: -0.32px;
+        opacity: 50%;
+        margin-top: 5px;">*허위 신고로 밝혀질 시 법적 대응이 가능합니다.</p>
+
+        <button id="submitBtn">접수 완료</button>
+    </div>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="{% static 'js/js.js' %}"></script>
+    <!-- <script src="./selectedArea.js"></script> -->
+    <script src="{% static 'js/ajax.js' %}"></script>
+</body>
+
+</html>

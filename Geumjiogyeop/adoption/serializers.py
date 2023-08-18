@@ -2,6 +2,11 @@ from rest_framework import serializers
 
 from user.models import User
 from .models import Adoption, UserLikedAdoption
+from django.conf import settings
+from rest_framework.exceptions import AuthenticationFailed
+import jwt
+from rest_framework.response import Response
+from rest_framework import status
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,9 +14,34 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AdoptionListSerializer(serializers.ModelSerializer):
+    isLike = serializers.SerializerMethodField()
+
     class Meta:
         model = Adoption
-        fields = ['adoption_id', 'name', 'gender', 'age', 'center', 'introduction', 'photo', 'likes']
+        fields = ['adoption_id', 'name', 'gender', 'age', 'center', 'introduction', 'photo', 'likes', 'isLike']
+
+    def get_isLike(self, obj):
+        try:
+            # token = self.context.COOKIES.get('jwt')
+            token = self.context['request'].COOKIES.get('jwt')
+
+            if not token :
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            user = User.objects.get(user_id=payload['user_id'])
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        try: 
+            UserLikedAdoption.objects.get(adoption = obj, user = user)
+        except UserLikedAdoption.DoesNotExist:
+            return False
+        return True
 
 class AdoptionCreateSerializer(serializers.ModelSerializer):
     # user = UserSerializer(many=True, read_only=True)

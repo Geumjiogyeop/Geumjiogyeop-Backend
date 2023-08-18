@@ -7,6 +7,7 @@ from .serializers import AdoptionListSerializer, AdoptionCreateSerializer, Adopt
 from rest_framework.exceptions import AuthenticationFailed
 import jwt
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 # adoption list 필터링 적용
 class AdoptionList(generics.ListAPIView):
@@ -36,6 +37,28 @@ class AdoptionList(generics.ListAPIView):
             queryset = queryset.filter(age__in=age)
 
         return queryset
+
+    def get(self, request, *args, **kwargs):
+        try:
+            token = request.COOKIES.get('jwt')
+
+            if not token :
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            user = User.objects.get(user_id=payload['user_id'])
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        adoptions = Adoption.objects.filter(user_id = user)
+        serializer = AdoptionListSerializer(adoptions, many=True, context = {'request': request})
+
+        return Response(serializer.data)
 
 # adoption 글 create - 로그인한 user만 create 가능
 class AdoptionCreate(generics.CreateAPIView):

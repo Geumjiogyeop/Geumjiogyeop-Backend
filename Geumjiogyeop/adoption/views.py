@@ -42,9 +42,11 @@ class AdoptionList(generics.ListAPIView):
         try:
             token = request.COOKIES.get('jwt')
 
-            if not token :
-                raise AuthenticationFailed('UnAuthenticated!')
-
+            if not token : # 로그인하지 않았다면
+                # raise AuthenticationFailed('UnAuthenticated!')
+                queryset = self.get_queryset()
+                serializer = self.get_serializer(queryset, many=True)
+                return Response(serializer.data)
             try :
                 payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
 

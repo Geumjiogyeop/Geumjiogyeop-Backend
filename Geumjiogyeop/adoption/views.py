@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 from .models import Adoption, UserLikedAdoption
 from user.models import User
-from .serializers import AdoptionListSerializer, AdoptionCreateSerializer, AdoptionDetailSerializer
+from .serializers import *
 from rest_framework.exceptions import AuthenticationFailed
 import jwt
 from django.conf import settings
@@ -56,7 +56,7 @@ class AdoptionList(generics.ListAPIView):
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         
         adoptions = Adoption.objects.filter(user_id = user)
-        serializer = AdoptionListSerializer(adoptions, many=True, context = {'request': request})
+        serializer = AdoptionLikedListSerializer(adoptions, many=True, context = {'request': request})
 
         return Response(serializer.data)
 

@@ -13,7 +13,14 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
+# 로그인 안 한 user도 볼 수 있음
 class AdoptionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Adoption
+        fields = ['adoption_id', 'name', 'gender', 'age', 'center', 'introduction', 'photo', 'likes']
+
+# 로그인된 user만 볼 수 있음
+class AdoptionLikedListSerializer(serializers.ModelSerializer):
     isLike = serializers.SerializerMethodField()
 
     class Meta:

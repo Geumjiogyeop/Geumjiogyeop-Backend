@@ -6,7 +6,7 @@ from user.models import User
 from rest_framework.decorators import api_view, action
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from .serializers import TodayImageSerializer, TodaySerializer, TodayRetrieveSerializer, TodayLikedSerializer, TodayListSerializer
+from .serializers import TodayImageSerializer, TodaySerializer, TodayRetrieveSerializer, TodayLikedSerializer, TodayListSerializer, TodayListModelSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import status
@@ -16,6 +16,28 @@ import jwt
 class TodayViewSet(ModelViewSet):
     queryset = Today.objects.all().order_by('-created_at')
     serializer_class = TodaySerializer
+
+    def list(self, request, *args, **kwargs):
+        try:
+            token = request.COOKIES.get('jwt')
+
+            if not token :
+                todays = Today.objects.all()
+                serializer = TodayListModelSerializer(todays, many = True, context={'request': request})
+                return Response(serializer.data)
+            try :
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('UnAuthenticated!')
+
+            user = User.objects.get(user_id=payload['user_id'])
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        todays = Today.objects.all()
+        serializer = TodayListSerializer(todays, many = True, context={'request': request})
+        return Response(serializer.data)
+        return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, pk=None):
         queryset = Today.objects.all()
